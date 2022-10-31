@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32929.385
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Crawler.UI", "Crawler.UI\Crawler.UI.csproj", "{CFD69700-C8D9-466D-A7DD-9C52611E9DCF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Crawler.Lib", "Crawler.Lib\Crawler.Lib.csproj", "{F7826626-57B2-4EC5-A26C-443A5C821EBF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CFD69700-C8D9-466D-A7DD-9C52611E9DCF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CFD69700-C8D9-466D-A7DD-9C52611E9DCF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CFD69700-C8D9-466D-A7DD-9C52611E9DCF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CFD69700-C8D9-466D-A7DD-9C52611E9DCF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7826626-57B2-4EC5-A26C-443A5C821EBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7826626-57B2-4EC5-A26C-443A5C821EBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7826626-57B2-4EC5-A26C-443A5C821EBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7826626-57B2-4EC5-A26C-443A5C821EBF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {97387AC8-7CA7-4D74-A597-D08ACE393B79}
+	EndGlobalSection
+EndGlobal
