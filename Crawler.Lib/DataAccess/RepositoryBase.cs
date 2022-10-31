@@ -10,7 +10,7 @@ namespace Crawler.Lib
 
         public RepositoryBase(string connectionString)
         {
-            ConnectionString = connectionString;
+            ConnectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
         }
 
         public virtual async Task<int> Delete(long id)
