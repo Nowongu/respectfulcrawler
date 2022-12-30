@@ -1,6 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<ItemGroup>
+		<PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
+		<PackageReference Include="RobotsSharpParser" Version="2.0.0" />
 		<PackageReference Include="System.Data.SQLite" Version="1.0.115.5" />
 	</ItemGroup>
 	
