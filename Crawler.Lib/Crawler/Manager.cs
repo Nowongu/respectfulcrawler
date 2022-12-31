@@ -1,50 +1,69 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using RobotsParser;
+using System.Collections.Concurrent;
 
 namespace Crawler.Lib.Crawler
 {
     public class Manager
     {
-        private readonly SitemapFeeder _feeder;
+        private readonly IRobots _robotsParser;
         private readonly DocumentRepository _repository;
         private readonly SemaphoreSlim _semaphore;
+        private readonly CancellationToken _cancellationToken;
+        private readonly BlockingCollection<string> _urls = new BlockingCollection<string>(new ConcurrentQueue<string>(), 10);
 
         //Can update Manger to take multiple feeders
-        public Manager(SitemapFeeder feeder, DocumentRepository repository)
+        public Manager(IRobots robotsParser, DocumentRepository repository, CancellationToken cancellationToken)
         {
-            _feeder = feeder;
+            _robotsParser = robotsParser;
             _repository = repository;
-            _semaphore = new SemaphoreSlim(0, 10);
+            _cancellationToken = cancellationToken;
+            _semaphore = new SemaphoreSlim(10);
         }
 
         public event EventHandler<ResultArgs>? Result;
 
-        private void RaiseResult(Document result) => Result?.Invoke(this, 
-            new ResultArgs() 
+        private void RaiseResult(DownloadResult result) => Result?.Invoke(this,
+            new ResultArgs()
             {
-                Body = result.Body,
+                Body = result.Content,
                 ContentType = result.ContentType,
-                StatusCode = result.Status,
-                Url = result.Url
+                StatusCode = result.StatusCode.ToString(),
+                Url = result.Url,
+                DownloadTime_ms = result.DownloadTime_ms,
             });
 
         public async Task Start()
         {
-            _feeder.UrlFound += Feeder_UrlFound;
-            await _feeder.Start();
+            await GetSitemapUrls();
         }
 
-        private async void Feeder_UrlFound(object? sender, UrlFoundArgs e)
+        private async Task GetSitemapUrls()
         {
-            _semaphore.Wait();
+            await _robotsParser.Load();
 
+            var sitemaps = await _robotsParser.GetSitemapIndexes();
+            foreach (var sitemap in sitemaps)
+            {
+                if (_cancellationToken.IsCancellationRequested) return;
+                var urls = await _robotsParser.GetUrls(sitemap);
+                foreach (var url in urls)
+                {
+                    if (_cancellationToken.IsCancellationRequested) return;
+                    var result = await DownloadAndSave(url.loc);
+                    if (result != null)
+                    {
+                        RaiseResult(result);
+                    }
+                }
+            }
+        }
+
+        private async Task<DownloadResult?> DownloadAndSave(string url)
+        {
             try
             {
-                var result = await Downloader.Instance.GetResult(e.Url);
+                await _semaphore.WaitAsync(_cancellationToken);
+                var result = await Downloader.Instance.GetResult(url, _cancellationToken);
 
                 var document = new Document
                 {
@@ -54,14 +73,20 @@ namespace Crawler.Lib.Crawler
                     Status = result.StatusCode.ToString(),
                     LastUpdated = DateTime.UtcNow
                 };
-                var sqlResult = await _repository.Save(document);
 
-                if (sqlResult == 1) RaiseResult(document);
+                var sqlResult = await _repository.Save(document);
+                if (sqlResult == 1) return result;
+            }
+            catch (OperationCanceledException)
+            {
+                _semaphore.Dispose();
             }
             finally
             {
                 _semaphore.Release();
             }
+
+            return null;
         }
     }
 }

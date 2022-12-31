@@ -1,22 +1,21 @@
 ﻿using System.Diagnostics;
 using System.Net;
-using System.Net.Http;
 using System.Runtime.Serialization;
-using System.Security.Policy;
 
 namespace Crawler.Lib.Crawler
 {
     public interface IDownloader
     {
-        Task<DownloadResult> GetResult(string url);
+        Task<DownloadResult> GetResult(string url, CancellationToken cancellationToken);
     }
 
     public class DownloadResult
     {
-        public string Url { get; set; }
+        public string? Url { get; set; }
         public int StatusCode { get; set; }
-        public string ContentType { get; set; }
-        public string Content { get; internal set; }
+        public string? ContentType { get; set; }
+        public string? Content { get; internal set; }
+        public long DownloadTime_ms { get; internal set; }
     }
 
     public sealed class Downloader : IDownloader
@@ -38,22 +37,27 @@ namespace Crawler.Lib.Crawler
 
         public static IDownloader Instance { get; } = new Downloader();
 
-        public async Task<DownloadResult> GetResult(string url)
+        public async Task<DownloadResult> GetResult(string url, CancellationToken cancellationToken)
         {
-            return await OperationWithBasicRetryAsync(url);
+            var timer = new Stopwatch();
+            timer.Start();
+            var result = await OperationWithBasicRetryAsync(url, cancellationToken);
+            timer.Stop();
+            result.DownloadTime_ms = timer.ElapsedMilliseconds;
+            return result;
         }
 
         //https://learn.microsoft.com/en-us/azure/architecture/patterns/retry
-        public async Task<DownloadResult> OperationWithBasicRetryAsync(string url)
+        public async Task<DownloadResult> OperationWithBasicRetryAsync(string url, CancellationToken cancellationToken)
         {
             int currentRetry = 0;
 
-            while (true)
+            while (!cancellationToken.IsCancellationRequested)
             {
                 try
                 {
                     // Call external service.
-                    var result = await TransientOperationAsync(url);
+                    var result = await TransientOperationAsync(url, cancellationToken);
 
                     return result;
                 }
@@ -84,14 +88,20 @@ namespace Crawler.Lib.Crawler
                 // Wait to retry the operation.
                 // Consider calculating an exponential delay here and
                 // using a strategy best suited for the operation and fault.
-                await Task.Delay(_delay);
+                await Task.Delay(_delay, cancellationToken);
             }
+
+            return new DownloadResult
+            {
+                StatusCode = -1,
+                Url = url
+            };
         }
 
         // Async method that wraps a call to a remote service (details not shown).
-        private async Task<DownloadResult> TransientOperationAsync(string url)
+        private async Task<DownloadResult> TransientOperationAsync(string url, CancellationToken cancellationToken)
         {
-            var response = await _client.GetAsync(url);
+            var response = await _client.GetAsync(url, cancellationToken);
 
             if (!response.IsSuccessStatusCode)
             {

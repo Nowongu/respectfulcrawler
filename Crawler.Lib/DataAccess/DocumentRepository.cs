@@ -1,14 +1,11 @@
-using System.Collections.Generic;
 using System.Data.SQLite;
-using System.Net.Mime;
-using System.Runtime.ConstrainedExecution;
 
 namespace Crawler.Lib;
 
 public class DocumentRepository : RepositoryBase<Document>
 {
     public DocumentRepository()
-        :base(Settings.Instance.ConnectionString)
+        : base(Settings.Instance.ConnectionString ?? throw new ArgumentNullException("ConnectionString value is null"))
     {
 
     }

@@ -5,6 +5,10 @@
 		<PackageReference Include="Nick.RobotsParser" Version="2.0.5" />
 		<PackageReference Include="System.Data.SQLite" Version="1.0.115.5" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\RobotsParser\Nick.RobotsParser\Nick.RobotsParser.csproj" />
+	</ItemGroup>
 	
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
