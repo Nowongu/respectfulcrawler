@@ -1,2 +1,2 @@
-# respectfulcrawler
+# Respectful Crawler
 Crawl the web respectfully
