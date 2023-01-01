@@ -1,6 +1,3 @@
-using Crawler.Lib;
-using Crawler.Lib.Crawler;
-
 namespace Crawler.UI
 {
     internal static class Program
@@ -9,7 +6,7 @@ namespace Crawler.UI
         ///  The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
+        private static void Main()
         {
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
