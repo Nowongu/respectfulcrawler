@@ -41,9 +41,14 @@ name: .NET Core Desktop
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'Crawler.Lib/**'
+      - 'Crawler.UI/**'
   pull_request:
     branches: [ "main" ]
-
+    paths:
+      - 'Crawler.Lib/**'
+      - 'Crawler.UI/**'
 jobs:
   build:
     strategy:
