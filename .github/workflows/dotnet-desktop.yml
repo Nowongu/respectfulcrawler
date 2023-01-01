@@ -62,7 +62,7 @@ jobs:
     env:
       Solution_Name: RespectfulCrawler.sln                         # Replace with your solution name, i.e. MyWpfApp.sln.
       Test_Project_Path: Crawler.Test\Crawler.Test.csproj                 # Replace with the path to your test project, i.e. MyWpfApp.Tests\MyWpfApp.Tests.csproj.
-      Wap_Project_Directory: Crawler.UI\bin\Release\net6.0-windows    # Replace with the Wap project directory relative to the solution, i.e. MyWpfApp.Package.
+      Build_Output_Directory: Crawler.UI\bin\Release\net6.0-windows    # Replace with the Wap project directory relative to the solution, i.e. MyWpfApp.Package.
       Wap_Project_File: Crawler.UI\Crawler.UI.csproj                   # Replace with the path to your Wap project, i.e. MyWpf.App.Package\MyWpfApp.Package.wapproj.
       Cert_Directory: Crawler.UI    # Replace with the Wap project directory relative to the solution, i.e. MyWpfApp.Package.
 
@@ -110,11 +110,11 @@ jobs:
 
     # Remove the pfx
     - name: Remove the pfx
-      run: Remove-Item -path $env:Wap_Project_Directory\GitHubActionsWorkflow.pfx
+      run: Remove-Item -path $env:Cert_Directory\GitHubActionsWorkflow.pfx
 
     # Upload the MSIX package: https://github.com/marketplace/actions/upload-a-build-artifact
     - name: Upload build artifacts
       uses: actions/upload-artifact@v3
       with:
         name: Release Package
-        path: ${{ env.Wap_Project_Directory }}/**/*
+        path: ${{ env.Build_Output_Directory }}/**/*
