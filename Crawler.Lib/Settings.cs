@@ -1,4 +1,5 @@
 ﻿using System.Configuration;
+using System.Reflection;
 
 namespace Crawler.Lib
 {
@@ -6,10 +7,22 @@ namespace Crawler.Lib
     {
         public static Settings Instance { get; } = new Settings();
 
-        public string? ConnectionString => ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
+        public string DatabaseName
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["database_name"] ?? "respectful_crawler.db";
+            }
+            set
+            {
+                AddUpdateAppSettings("database_name", value);
+            }
+        }
 
-        public string? SeedUrl 
-        { 
+        public string ConnectionString => $"Data Source={new FileInfo(Assembly.GetEntryAssembly()?.Location ?? string.Empty).Directory}\\{DatabaseName}";
+
+        public string? SeedUrl
+        {
             get
             {
                 return ConfigurationManager.AppSettings["seed_url"];
@@ -26,7 +39,7 @@ namespace Crawler.Lib
         {
             get
             {
-                if(int.TryParse(ConfigurationManager.AppSettings["max_internal_depth"], out int settingValue)) return settingValue;
+                if (int.TryParse(ConfigurationManager.AppSettings["max_internal_depth"], out int settingValue)) return settingValue;
                 return 0;
             }
             set

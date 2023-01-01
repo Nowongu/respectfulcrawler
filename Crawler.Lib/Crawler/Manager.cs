@@ -1,9 +1,5 @@
 ﻿using HtmlParser;
-using Microsoft.Extensions.DependencyInjection;
 using RobotsParser;
-using System.Collections.Concurrent;
-using System.Data.Entity.Core.Common.EntitySql;
-using System.Security.Policy;
 
 namespace Crawler.Lib.Crawler
 {
@@ -95,7 +91,7 @@ namespace Crawler.Lib.Crawler
             var result = await DownloadAndSave(url);
             if (result == null) return;
             RaiseResult(result);
-            
+
             if (depth + 1 > _maxInternalDepth || string.IsNullOrWhiteSpace(result?.Content)) return;
 
             var pageUrls = GetPageUrls(url, result.Content);
@@ -122,7 +118,7 @@ namespace Crawler.Lib.Crawler
 
                 var baseUrl = new Uri(pageUrl);
                 if (node.Attributes.TryGetValue("href", out string? tagValue)
-                    && Uri.TryCreate(tagValue, UriKind.Relative, out Uri? relative) 
+                    && Uri.TryCreate(tagValue, UriKind.Relative, out Uri? relative)
                     && Uri.TryCreate(baseUrl, relative, out Uri? resultUri)
                     && _visited.Add(resultUri.AbsoluteUri))
                 {

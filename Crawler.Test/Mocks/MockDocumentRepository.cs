@@ -1,12 +1,11 @@
 ﻿using Crawler.Lib;
-using System.Reflection.Metadata;
 
 namespace Crawler.Test.Mocks
 {
     internal class MockDocumentRepository : IRepository<Lib.Document>
     {
         public Dictionary<long, Lib.Document> Database = new Dictionary<long, Lib.Document>();
-        long idTrack = 0;
+        private long idTrack = 0;
 
         public Task<int> Delete(long id)
         {
@@ -35,7 +34,7 @@ namespace Crawler.Test.Mocks
 
         public Task<int> Save(Lib.Document cur)
         {
-            if (cur.Id == 0) 
+            if (cur.Id == 0)
             {
                 cur.Id = ++idTrack;
             }

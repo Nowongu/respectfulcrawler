@@ -1,7 +1,5 @@
-using Crawler.Lib;
 using Crawler.Lib.Crawler;
 using Crawler.Test.Mocks;
-using RobotsParser;
 
 namespace Crawler.Test
 {
