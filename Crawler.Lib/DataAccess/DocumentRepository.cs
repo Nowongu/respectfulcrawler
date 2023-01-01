@@ -2,17 +2,15 @@ using System.Data.SQLite;
 
 namespace Crawler.Lib;
 
-public class DocumentRepository : RepositoryBase<Document>
+public class DocumentRepository : RepositoryBase<Document>, IRepository<Document>
 {
     public DocumentRepository()
         : base(Settings.Instance.ConnectionString ?? throw new ArgumentNullException("ConnectionString value is null"))
-    {
-
-    }
+    { }
 
     protected override string TableName => "document";
 
-    public override async IAsyncEnumerable<Document> GetById(long id)
+    public override async Task<Document?> GetById(long id)
     {
         using var con = new SQLiteConnection(ConnectionString);
         using var cmd = new SQLiteCommand($"select * from document where @id = {id}", con);
@@ -20,20 +18,19 @@ public class DocumentRepository : RepositoryBase<Document>
         await con.OpenAsync();
 
         var reader = await cmd.ExecuteReaderAsync();
-        if (!reader.HasRows) yield break;
+        if (!reader.HasRows) return null;
 
-        while (await reader.ReadAsync())
+        await reader.ReadAsync();
+
+        return new Document()
         {
-            yield return new Document()
-            {
-                Id = reader.GetInt32(0),
-                Url = reader.GetValue(1)?.ToString(),
-                LastUpdated = reader.GetDateTime(2),
-                Status = reader.GetValue(3)?.ToString(),
-                Body = reader.GetString(4),
-                ContentType = reader.GetString(5)
-            };
-        }
+            Id = reader.GetInt32(0),
+            Url = reader.GetValue(1)?.ToString(),
+            LastUpdated = reader.GetDateTime(2),
+            Status = reader.GetValue(3)?.ToString(),
+            Body = reader.GetString(4),
+            ContentType = reader.GetString(5)
+        };
     }
 
     protected override async Task<int> Update(Document data)

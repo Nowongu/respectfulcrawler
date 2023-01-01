@@ -14,8 +14,8 @@ namespace Crawler.Lib.Crawler
         public string? Url { get; set; }
         public int StatusCode { get; set; }
         public string? ContentType { get; set; }
-        public string? Content { get; internal set; }
-        public long DownloadTime_ms { get; internal set; }
+        public string? Content { get; set; }
+        public long DownloadTime_ms { get; set; }
     }
 
     public sealed class Downloader : IDownloader
@@ -26,16 +26,25 @@ namespace Crawler.Lib.Crawler
 
         static Downloader() { }
 
+        //used for mocking
+        public Downloader(IDownloader downloader)
+            : this()
+        {
+            Instance = downloader;
+        }
+
         private Downloader()
         {
             var handler = new SocketsHttpHandler
             {
-                PooledConnectionLifetime = TimeSpan.FromMinutes(15) // Recreate every 15 minutes
+                PooledConnectionLifetime = TimeSpan.FromMinutes(15), // Recreate every 15 minutes
+                AllowAutoRedirect = true,
+                MaxAutomaticRedirections = 15
             };
             _client = new HttpClient(handler);
         }
 
-        public static IDownloader Instance { get; } = new Downloader();
+        public static IDownloader Instance { get; private set; } = new Downloader();
 
         public async Task<DownloadResult> GetResult(string url, CancellationToken cancellationToken)
         {

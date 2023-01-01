@@ -38,7 +38,12 @@
             this.lblQueue = new System.Windows.Forms.Label();
             this.txt_log = new System.Windows.Forms.RichTextBox();
             this.prg_total = new System.Windows.Forms.ProgressBar();
+            this.cbx_follow_internal = new System.Windows.Forms.CheckBox();
+            this.cbx_follow_sitemap = new System.Windows.Forms.CheckBox();
+            this.num_max_internal_depth = new System.Windows.Forms.NumericUpDown();
+            this.lbl_max_depth = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.num_max_internal_depth)).BeginInit();
             this.SuspendLayout();
             // 
             // btn_start
@@ -65,7 +70,7 @@
             // btn_deleteall
             // 
             this.btn_deleteall.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btn_deleteall.Location = new System.Drawing.Point(792, 12);
+            this.btn_deleteall.Location = new System.Drawing.Point(1063, 12);
             this.btn_deleteall.Name = "btn_deleteall";
             this.btn_deleteall.Size = new System.Drawing.Size(75, 23);
             this.btn_deleteall.TabIndex = 1;
@@ -79,10 +84,10 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txt_seed.Location = new System.Drawing.Point(12, 41);
             this.txt_seed.Name = "txt_seed";
-            this.txt_seed.PlaceholderText = "seed url";
-            this.txt_seed.Size = new System.Drawing.Size(855, 23);
+            this.txt_seed.PlaceholderText = "https://mysite.com";
+            this.txt_seed.Size = new System.Drawing.Size(1126, 23);
             this.txt_seed.TabIndex = 2;
-            this.txt_seed.Text = "https://www.news24.com/";
+            this.txt_seed.TextChanged += new System.EventHandler(this.txt_seed_TextChanged);
             // 
             // groupBox1
             // 
@@ -129,25 +134,74 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txt_log.Location = new System.Drawing.Point(192, 70);
-            this.txt_log.Multiline = true;
             this.txt_log.Name = "txt_log";
-            this.txt_log.Size = new System.Drawing.Size(675, 428);
+            this.txt_log.Size = new System.Drawing.Size(946, 531);
             this.txt_log.TabIndex = 4;
+            this.txt_log.Text = "";
             // 
             // prg_total
             // 
             this.prg_total.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.prg_total.Location = new System.Drawing.Point(12, 504);
+            this.prg_total.Location = new System.Drawing.Point(12, 607);
             this.prg_total.Name = "prg_total";
-            this.prg_total.Size = new System.Drawing.Size(855, 23);
+            this.prg_total.Size = new System.Drawing.Size(1126, 23);
             this.prg_total.TabIndex = 5;
+            // 
+            // cbx_follow_internal
+            // 
+            this.cbx_follow_internal.AutoSize = true;
+            this.cbx_follow_internal.Location = new System.Drawing.Point(206, 14);
+            this.cbx_follow_internal.Name = "cbx_follow_internal";
+            this.cbx_follow_internal.Size = new System.Drawing.Size(134, 19);
+            this.cbx_follow_internal.TabIndex = 6;
+            this.cbx_follow_internal.Text = "Follow Internal Links";
+            this.cbx_follow_internal.UseVisualStyleBackColor = true;
+            this.cbx_follow_internal.CheckedChanged += new System.EventHandler(this.cbx_follow_internal_CheckedChanged);
+            // 
+            // cbx_follow_sitemap
+            // 
+            this.cbx_follow_sitemap.AutoSize = true;
+            this.cbx_follow_sitemap.Location = new System.Drawing.Point(93, 14);
+            this.cbx_follow_sitemap.Name = "cbx_follow_sitemap";
+            this.cbx_follow_sitemap.Size = new System.Drawing.Size(107, 19);
+            this.cbx_follow_sitemap.TabIndex = 7;
+            this.cbx_follow_sitemap.Text = "Follow Sitemap";
+            this.cbx_follow_sitemap.UseVisualStyleBackColor = true;
+            this.cbx_follow_sitemap.CheckedChanged += new System.EventHandler(this.cbx_follow_sitemap_CheckedChanged);
+            // 
+            // num_max_internal_depth
+            // 
+            this.num_max_internal_depth.CausesValidation = false;
+            this.num_max_internal_depth.Location = new System.Drawing.Point(412, 11);
+            this.num_max_internal_depth.Name = "num_max_internal_depth";
+            this.num_max_internal_depth.Size = new System.Drawing.Size(40, 23);
+            this.num_max_internal_depth.TabIndex = 8;
+            this.num_max_internal_depth.Value = new decimal(new int[] {
+            3,
+            0,
+            0,
+            0});
+            this.num_max_internal_depth.ValueChanged += new System.EventHandler(this.num_max_internal_depth_ValueChanged);
+            // 
+            // lbl_max_depth
+            // 
+            this.lbl_max_depth.AutoSize = true;
+            this.lbl_max_depth.Location = new System.Drawing.Point(344, 15);
+            this.lbl_max_depth.Name = "lbl_max_depth";
+            this.lbl_max_depth.Size = new System.Drawing.Size(68, 15);
+            this.lbl_max_depth.TabIndex = 9;
+            this.lbl_max_depth.Text = "Max Depth:";
             // 
             // frm_main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(879, 539);
+            this.ClientSize = new System.Drawing.Size(1150, 642);
+            this.Controls.Add(this.lbl_max_depth);
+            this.Controls.Add(this.num_max_internal_depth);
+            this.Controls.Add(this.cbx_follow_sitemap);
+            this.Controls.Add(this.cbx_follow_internal);
             this.Controls.Add(this.prg_total);
             this.Controls.Add(this.txt_log);
             this.Controls.Add(this.groupBox1);
@@ -156,10 +210,11 @@
             this.Controls.Add(this.btn_start);
             this.Controls.Add(this.btn_stop);
             this.Name = "frm_main";
-            this.Text = "Respectful Craweler";
+            this.Text = "Respectful Crawler";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frm_main_FormClosing);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.num_max_internal_depth)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -177,5 +232,9 @@
         private Label lblQueue;
         private RichTextBox txt_log;
         private ProgressBar prg_total;
+        private CheckBox cbx_follow_internal;
+        private CheckBox cbx_follow_sitemap;
+        private NumericUpDown num_max_internal_depth;
+        private Label lbl_max_depth;
     }
 }

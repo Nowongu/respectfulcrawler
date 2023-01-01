@@ -1,26 +1,37 @@
-﻿using RobotsParser;
+﻿using HtmlParser;
+using Microsoft.Extensions.DependencyInjection;
+using RobotsParser;
 using System.Collections.Concurrent;
+using System.Data.Entity.Core.Common.EntitySql;
+using System.Security.Policy;
 
 namespace Crawler.Lib.Crawler
 {
     public class Manager
     {
         private readonly IRobots _robotsParser;
-        private readonly DocumentRepository _repository;
+        private readonly IRepository<Document> _documentRepository;
         private readonly SemaphoreSlim _semaphore;
         private readonly CancellationToken _cancellationToken;
-        private readonly BlockingCollection<string> _urls = new BlockingCollection<string>(new ConcurrentQueue<string>(), 10);
+        private readonly bool _followInternalLinks;
+        private readonly int _maxInternalDepth;
+        private readonly bool _followSitemap;
+        private readonly HashSet<string> _visited = new HashSet<string>();
 
         //Can update Manger to take multiple feeders
-        public Manager(IRobots robotsParser, DocumentRepository repository, CancellationToken cancellationToken)
+        public Manager(ManagerContext managerContext)
         {
-            _robotsParser = robotsParser;
-            _repository = repository;
-            _cancellationToken = cancellationToken;
+            _robotsParser = managerContext.RobotsParser ?? throw new ArgumentNullException("RobotsParser instance is required in Manager");
+            _documentRepository = managerContext.DocumentRepository ?? throw new ArgumentNullException("DocumentRepository instance is required in Manager");
+            _cancellationToken = managerContext.CancellationToken;
             _semaphore = new SemaphoreSlim(10);
+            _followInternalLinks = managerContext.FollowInternalLinks;
+            _maxInternalDepth = managerContext.MaxInternalDepth;
+            _followSitemap = managerContext.FollowSitemap;
         }
 
         public event EventHandler<ResultArgs>? Result;
+        public event EventHandler<ProgressArgs>? Progress;
 
         private void RaiseResult(DownloadResult result) => Result?.Invoke(this,
             new ResultArgs()
@@ -32,9 +43,16 @@ namespace Crawler.Lib.Crawler
                 DownloadTime_ms = result.DownloadTime_ms,
             });
 
-        public async Task Start()
+        private void RaiseProgress(int queueCount) => Progress?.Invoke(this,
+            new ProgressArgs()
+            {
+                QueueCount = queueCount
+            });
+
+        public async Task Start(string seed)
         {
-            await GetSitemapUrls();
+            if (_followSitemap) await GetSitemapUrls();
+            if (_followInternalLinks) await FollowInternalLinks(seed);
         }
 
         private async Task GetSitemapUrls()
@@ -46,20 +64,77 @@ namespace Crawler.Lib.Crawler
             {
                 if (_cancellationToken.IsCancellationRequested) return;
                 var urls = await _robotsParser.GetUrls(sitemap);
-                foreach (var url in urls)
+                var urlQueue = urls
+                        .Select(x => x.loc)
+                        .Distinct()
+                        .Except(_visited);
+
+                RaiseProgress(urlQueue.Count());
+                foreach (var url in urlQueue)
                 {
                     if (_cancellationToken.IsCancellationRequested) return;
-                    var result = await DownloadAndSave(url.loc);
-                    if (result != null)
+
+                    if (_followInternalLinks)
                     {
+                        await FollowInternalLinks(url, 1);
+                    }
+                    else
+                    {
+                        var result = await DownloadAndSave(url);
+                        if (result == null) break;
                         RaiseResult(result);
                     }
                 }
             }
         }
 
+        private async Task FollowInternalLinks(string url, int depth = 0)
+        {
+            if (depth > _maxInternalDepth) return;
+
+            var result = await DownloadAndSave(url);
+            if (result == null) return;
+            RaiseResult(result);
+            
+            if (depth + 1 > _maxInternalDepth || string.IsNullOrWhiteSpace(result?.Content)) return;
+
+            var pageUrls = GetPageUrls(url, result.Content);
+            foreach (var pageUrl in pageUrls)
+            {
+                if (_cancellationToken.IsCancellationRequested) return;
+
+                var pageResult = await DownloadAndSave(pageUrl);
+                if (pageResult == null) break;
+
+                RaiseResult(pageResult);
+                await FollowInternalLinks(pageUrl, ++depth);
+            }
+        }
+
+        //This is running on the main thread, parsing a large page
+        //could make the UI stutter if the CPU is under strain.
+        private IEnumerable<string> GetPageUrls(string pageUrl, string content)
+        {
+            var nodes = Parser.Parse(content);
+            foreach (var node in nodes.Where(x => x.Type == NodeType.a))
+            {
+                if (_cancellationToken.IsCancellationRequested) yield break;
+
+                var baseUrl = new Uri(pageUrl);
+                if (node.Attributes.TryGetValue("href", out string? tagValue)
+                    && Uri.TryCreate(tagValue, UriKind.Relative, out Uri? relative) 
+                    && Uri.TryCreate(baseUrl, relative, out Uri? resultUri)
+                    && _visited.Add(resultUri.AbsoluteUri))
+                {
+                    yield return resultUri.AbsoluteUri;
+                }
+            }
+        }
+
         private async Task<DownloadResult?> DownloadAndSave(string url)
         {
+            if (!_visited.Add(url)) return null;
+
             try
             {
                 await _semaphore.WaitAsync(_cancellationToken);
@@ -74,12 +149,12 @@ namespace Crawler.Lib.Crawler
                     LastUpdated = DateTime.UtcNow
                 };
 
-                var sqlResult = await _repository.Save(document);
+                var sqlResult = await _documentRepository.Save(document);
                 if (sqlResult == 1) return result;
             }
             catch (OperationCanceledException)
             {
-                _semaphore.Dispose();
+                // Cancel called on cancellation token, ignore exceptions.
             }
             finally
             {

@@ -1,3 +1,6 @@
+using Crawler.Lib;
+using Crawler.Lib.Crawler;
+
 namespace Crawler.UI
 {
     internal static class Program
