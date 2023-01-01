@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Crawler.UI", "Crawler.UI\Cr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Crawler.Lib", "Crawler.Lib\Crawler.Lib.csproj", "{F7826626-57B2-4EC5-A26C-443A5C821EBF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Crawler.Test", "Crawler.Test\Crawler.Test.csproj", "{D444317D-FB4D-43D0-9ACB-ED914B336E78}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Crawler.Test", "Crawler.Test\Crawler.Test.csproj", "{D444317D-FB4D-43D0-9ACB-ED914B336E78}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -8,7 +8,7 @@ namespace Crawler.UI
     public partial class frm_main : Form
     {
         private readonly DocumentRepository _repository;
-        private readonly CancellationTokenSource _tokenSource;
+        private CancellationTokenSource _tokenSource;
         private readonly long[] _recentTimes = new long[20];
         private int pageCount = 0;
         private int queueLength = 0;
@@ -26,6 +26,8 @@ namespace Crawler.UI
 
         private async void btn_start_Click(object sender, EventArgs e)
         {
+            _tokenSource = new CancellationTokenSource();
+
             pageCount = 0;
             queueLength = 0;
             txt_log.AppendText($"{DateTime.UtcNow:s} Crawl started.{Environment.NewLine}");
@@ -44,13 +46,34 @@ namespace Crawler.UI
                     FollowSitemap = cbx_follow_sitemap.Checked,
                     CancellationToken = _tokenSource.Token,
                     DocumentRepository = _repository,
-                    RobotsParser = new Robots(txt_seed.Text, "respectful_crawler", supressSitemapErrors: true)
+                    RobotsParser = new Robots("respectful_crawler", supressSitemapErrors: true)
                 }
             );
             manager.Result += Manager_Result;
             manager.Progress += Manager_Progress;
+            manager.Completed += Manager_Completed;
             await manager.Start(txt_seed.Text);
-            txt_log.AppendText($"{DateTime.UtcNow:s} Crawl completed.{Environment.NewLine}");
+        }
+
+        private void Manager_Completed(object? sender, CompletedArgs e)
+        {
+            _tokenSource.Cancel();
+            _tokenSource.TryReset();
+            cbx_follow_internal.Enabled = true;
+            cbx_follow_sitemap.Enabled = true;
+            num_max_internal_depth.Enabled = true;
+            btn_stop.Visible = false;
+            btn_start.Visible = true;
+
+            if (string.IsNullOrEmpty(e.Error))
+            {
+                txt_log.AppendText($"{DateTime.UtcNow:s} Crawl completed successfully.{Environment.NewLine}");
+            }
+            else
+            {
+                txt_log.AppendText($"{DateTime.UtcNow:s} Crawl completed with error: {e.Error}.{Environment.NewLine}");
+            }
+
         }
 
         private void btn_stop_Click(object sender, EventArgs e)

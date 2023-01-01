@@ -14,6 +14,7 @@ namespace Crawler.Lib.Crawler
         private readonly bool _followSitemap;
         private readonly HashSet<string> _visited = new HashSet<string>();
 
+
         //Can update Manger to take multiple feeders
         public Manager(ManagerContext managerContext)
         {
@@ -28,6 +29,7 @@ namespace Crawler.Lib.Crawler
 
         public event EventHandler<ResultArgs>? Result;
         public event EventHandler<ProgressArgs>? Progress;
+        public event EventHandler<CompletedArgs>? Completed;
 
         private void RaiseResult(DownloadResult result) => Result?.Invoke(this,
             new ResultArgs()
@@ -45,15 +47,36 @@ namespace Crawler.Lib.Crawler
                 QueueCount = queueCount
             });
 
+        private void RaiseCompleted(string? error = null) => Completed?.Invoke(this, new CompletedArgs() { Error = error });
+
         public async Task Start(string seed)
         {
-            if (_followSitemap) await GetSitemapUrls();
-            if (_followInternalLinks) await FollowInternalLinks(seed);
+            try
+            {
+                _visited.Clear();
+
+                if (_followSitemap) await GetSitemapUrls(seed);
+                if (_followInternalLinks) await FollowInternalLinks(seed);
+            }
+            catch (AggregateException e)
+            {
+                RaiseCompleted(e.GetBaseException().Message);
+            }
+            catch (Exception e)
+            {
+                RaiseCompleted(e.Message);
+            }
+            finally
+            {
+                RaiseCompleted();
+            }
         }
 
-        private async Task GetSitemapUrls()
+        private async Task GetSitemapUrls(string seed)
         {
-            await _robotsParser.Load();
+            await _robotsParser.LoadRobotsFromUrl($"{seed}/robots.txt");
+             
+            if (!_robotsParser.Sitemaps.Any()) return;
 
             var sitemaps = await _robotsParser.GetSitemapIndexes();
             foreach (var sitemap in sitemaps)
@@ -120,7 +143,7 @@ namespace Crawler.Lib.Crawler
                 if (node.Attributes.TryGetValue("href", out string? tagValue)
                     && Uri.TryCreate(tagValue, UriKind.Relative, out Uri? relative)
                     && Uri.TryCreate(baseUrl, relative, out Uri? resultUri)
-                    && _visited.Add(resultUri.AbsoluteUri))
+                    && !_visited.Contains(resultUri.AbsoluteUri))
                 {
                     yield return resultUri.AbsoluteUri;
                 }

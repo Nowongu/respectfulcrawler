@@ -13,4 +13,9 @@
     {
         public int QueueCount { get; set; }
     }
+
+    public class CompletedArgs : EventArgs
+    {
+        public string? Error { get; set; }
+    }
 }

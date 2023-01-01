@@ -4,9 +4,9 @@ namespace Crawler.Test.Mocks
 {
     internal class MockRobots : IRobots
     {
-        public IReadOnlyList<Useragent> UserAgents => throw new NotImplementedException();
+        public HashSet<string> Sitemaps { get; } = new HashSet<string>();
 
-        public IEnumerable<string> Sitemaps => throw new NotImplementedException();
+        public IReadOnlyList<Useragent> UserAgents => throw new NotImplementedException();
 
         public IEnumerable<string> GetAllowedPaths(string userAgent = "*")
         {
@@ -23,7 +23,7 @@ namespace Crawler.Test.Mocks
             throw new NotImplementedException();
         }
 
-        public Task<IReadOnlyList<tSitemap>> GetSitemapIndexes(string sitemapUrl = "")
+        public Task<IReadOnlyList<tSitemap>> GetSitemapIndexes(string? sitemapUrl = null)
         {
             List<tSitemap> items = new List<tSitemap>();
             for (int i = 0; i < 10; i++)
@@ -61,14 +61,15 @@ namespace Crawler.Test.Mocks
             throw new NotImplementedException();
         }
 
-        public Task Load()
+        public Task<bool> LoadRobotsContent(string robotsContent)
         {
-            return Task.CompletedTask;
+            throw new NotImplementedException();
         }
 
-        public Task Load(string robotsContent)
+        public Task<bool> LoadRobotsFromUrl(string robotsUrl)
         {
-            return Task.CompletedTask;
+            Sitemaps.Add("https://fakesitemap.com");
+            return Task.FromResult(true);
         }
     }
 }
