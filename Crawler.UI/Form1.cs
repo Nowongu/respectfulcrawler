@@ -1,7 +1,7 @@
 using Crawler.Lib;
 using Crawler.Lib.Crawler;
 using RobotsParser;
-using System.Configuration;
+using System.Data.SQLite;
 
 namespace Crawler.UI
 {
@@ -121,6 +121,19 @@ namespace Crawler.UI
         private void num_max_internal_depth_ValueChanged(object sender, EventArgs e)
         {
             Settings.Instance.MaxInternalDepth = (int)num_max_internal_depth.Value;
+        }
+
+        private async void frm_main_Shown(object sender, EventArgs e)
+        {
+            //create database if not found
+            if (!File.Exists(Settings.Instance.DatabaseName))
+            {
+                SQLiteConnection.CreateFile(Settings.Instance.DatabaseName);
+                using var con = new SQLiteConnection(Settings.Instance.ConnectionString);
+                using var cmd = new SQLiteCommand("CREATE TABLE document (\r\n\tid INTEGER PRIMARY KEY,\r\n   \turl TEXT NOT NULL,\r\n    last_updated TEXT NULL, --as ISO8601 strings (\"YYYY-MM-DD HH:MM:SS.SSS\").\r\n\tstatus TEXT NULL,\r\n\tbody BLOB  NULL,\r\n\tcontent_type TEXT NULL,\r\n\tblob_download_ms INTEGER NULL\r\n);CREATE INDEX url_index ON document(url)", con);
+                await con.OpenAsync();
+                cmd.ExecuteNonQuery();
+            }
         }
     }
 }

@@ -212,6 +212,7 @@
             this.Name = "frm_main";
             this.Text = "Respectful Crawler";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frm_main_FormClosing);
+            this.Shown += new System.EventHandler(this.frm_main_Shown);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.num_max_internal_depth)).EndInit();

@@ -20,8 +20,8 @@ namespace Crawler.Lib.Crawler
 
     public sealed class Downloader : IDownloader
     {
-        private HttpClient _client;
-        private int _retryCount = 3;
+        private readonly HttpClient _client;
+        private readonly int _retryCount = 3;
         private readonly TimeSpan _delay = TimeSpan.FromSeconds(5);
 
         static Downloader() { }
