@@ -64,6 +64,7 @@ jobs:
       Test_Project_Path: Crawler.Test\Crawler.Test.csproj                 # Replace with the path to your test project, i.e. MyWpfApp.Tests\MyWpfApp.Tests.csproj.
       Wap_Project_Directory: Crawler.UI\bin\Release\net6.0-windows    # Replace with the Wap project directory relative to the solution, i.e. MyWpfApp.Package.
       Wap_Project_File: Crawler.UI\Crawler.UI.csproj                   # Replace with the path to your Wap project, i.e. MyWpf.App.Package\MyWpfApp.Package.wapproj.
+      Cert_Directory: Crawler.UI    # Replace with the Wap project directory relative to the solution, i.e. MyWpfApp.Package.
 
     steps:
     - name: Checkout
@@ -95,7 +96,7 @@ jobs:
     - name: Decode the pfx
       run: |
         $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")
-        $certificatePath = Join-Path -Path $env:Wap_Project_Directory -ChildPath GitHubActionsWorkflow.pfx
+        $certificatePath = Join-Path -Path $env:Cert_Directory -ChildPath GitHubActionsWorkflow.pfx
         [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
 
     # Create the app package by building and packaging the Windows Application Packaging project
