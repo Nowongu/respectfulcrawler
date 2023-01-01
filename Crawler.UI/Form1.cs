@@ -55,7 +55,7 @@ namespace Crawler.UI
 
         private void btn_stop_Click(object sender, EventArgs e)
         {
-            txt_log.AppendText($"{DateTime.UtcNow:s} Crawl stopped{Environment.NewLine}");
+            txt_log.AppendText($"{DateTime.UtcNow:s} Crawl stopped.{Environment.NewLine}");
 
             _tokenSource.Cancel();
             _tokenSource.TryReset();

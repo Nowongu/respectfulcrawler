@@ -12,7 +12,8 @@ namespace Crawler.Test
         public async Task Manager_Basic_Test()
         {
             var mockRobots = new MockRobots();
-            new Downloader(new MockDownloader()); //Overwrites the downloader single instance in Downloader.Instance
+            _ = Downloader.Instance;
+            _ = new Downloader(new MockDownloader()); //Overwrites the downloader single instance in Downloader.Instance
             var mockDocumentRepository = new MockDocumentRepository();
             var tokenSource = new CancellationTokenSource();
             var context = new ManagerContext()
