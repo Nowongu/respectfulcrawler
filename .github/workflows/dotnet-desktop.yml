@@ -40,11 +40,16 @@ name: .NET Core Desktop
 
 on:
   workflow_dispatch:
-  # push:
-  #   branches: [ "main" ]
-  # pull_request:
-  #   branches: [ "main" ]
-
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'Crawler.Lib/**'
+      - 'Crawler.UI/**'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'Crawler.Lib/**'
+      - 'Crawler.UI/**'
 jobs:
   build:
     strategy:
