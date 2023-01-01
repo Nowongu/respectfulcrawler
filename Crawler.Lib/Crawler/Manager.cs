@@ -76,7 +76,7 @@ namespace Crawler.Lib.Crawler
 
                     if (_followInternalLinks)
                     {
-                        await FollowInternalLinks(url, 1);
+                        await FollowInternalLinks(url);
                     }
                     else
                     {
